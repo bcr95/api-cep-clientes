@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+import httpx
 
 app = FastAPI()
 
@@ -13,6 +14,12 @@ def status():
 @app.get("/ceps/{cep}")
 def buscar(cep: str):
     if len(cep) != 8 or not cep.isdigit(): 
-        return {"erro": "CEP inválido"}
-    
-    return {"cep": cep}
+        raise HTTPException(status_code=400, detail="CEP inválido")
+
+    resposta = httpx.get(f"https://viacep.com.br/ws/{cep}/json/")
+    dados = resposta.json()
+
+    if "erro" in dados:
+        raise HTTPException(status_code=404, detail="CEP não encontrado")
+
+    return dados
