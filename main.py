@@ -16,19 +16,35 @@ def buscar(cep: str):
     if len(cep) != 8 or not cep.isdigit(): 
         raise HTTPException(status_code=400, detail="CEP inválido")
 
+    consultar_cep(cep)
+
+    if "erro" in consultar_cep(cep):
+        raise CEPNaoEncontrado()
+
+    
+class CEPNaoEncontrado(Exception):
+    pass
+
+class ProblemaDeComunicacao(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        
+
+def consultar_cep(cep):
+    
     try:
         resposta = httpx.get(f"https://viacep.com.br/ws/{cep}/json/", timeout=5.0)
         resposta.raise_for_status()
 
         dados = resposta.json()
     except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Tempo excedido")
+        raise ProblemaDeComunicacao("timeout")
     except httpx.RequestError:
-        raise HTTPException(status_code=503, detail="Falha na conexão")
+        raise ProblemaDeComunicacao("conexao")
     except httpx.HTTPStatusError:
-        raise HTTPException(status_code=502, detail="Erro na resposta do serviço de CEP")
+        raise ProblemaDeComunicacao("resposta_http")
 
     if "erro" in dados:
-        raise HTTPException(status_code=404, detail="CEP não encontrado")
+            raise CEPNaoEncontrado("CEP não encontrado")
 
     return dados
