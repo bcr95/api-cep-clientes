@@ -16,10 +16,19 @@ def buscar(cep: str):
     if len(cep) != 8 or not cep.isdigit(): 
         raise HTTPException(status_code=400, detail="CEP inválido")
 
-    consultar_cep(cep)
-
-    if "erro" in consultar_cep(cep):
-        raise CEPNaoEncontrado()
+    try:
+        dados = consultar_cep(cep)
+        return dados
+    except CEPNaoEncontrado:
+        raise HTTPException(status_code=404, detail="CEP não encontrado")
+        
+    except ProblemaDeComunicacao as erro:
+        if erro.tipo == "timeout":
+            raise HTTPException(status_code=504, detail="Tempo excedido")
+        elif erro.tipo == "conexao":
+            raise HTTPException(status_code=503, detail="Falha na conexão")
+        elif erro.tipo == "resposta_http":
+            raise HTTPException(status_code=502, detail="Resposta inválida do servidor")
 
     
 class CEPNaoEncontrado(Exception):
@@ -29,7 +38,6 @@ class ProblemaDeComunicacao(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         
-
 def consultar_cep(cep):
     
     try:
