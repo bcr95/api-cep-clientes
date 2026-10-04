@@ -53,6 +53,6 @@ def consultar_cep(cep):
         raise ProblemaDeComunicacao("resposta_http")
 
     if "erro" in dados:
-            raise CEPNaoEncontrado("CEP não encontrado")
+        raise CEPNaoEncontrado("CEP não encontrado")
 
     return dados
