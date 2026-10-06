@@ -18,3 +18,17 @@ class Cliente(Base):
     cep: Mapped[str] = mapped_column(String(8))
 
 Base.metadata.create_all(engine)
+
+cliente = Cliente(
+    cpf="12345678901",
+    nome="João da Silva",
+    telefone="21999999999",
+    email="joao@email.com",
+    cep="20040002"
+)
+
+session = SessionLocal()
+session.add(cliente)
+session.commit()
+print(cliente.id)
+session.close()
