@@ -1,7 +1,12 @@
-from sqlalchemy import create_engine, String
+from sqlalchemy import create_engine, String, select
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
 
-engine = create_engine('sqlite:///banco.db', echo=True)
+from pathlib import Path
+
+BASE_DIR=Path(__file__).resolve().parent
+DB_PATH=BASE_DIR/"banco.db"
+
+engine = create_engine("sqlite:///" + str(DB_PATH), echo=True)
 SessionLocal = sessionmaker(bind=engine)
 
 class Base(DeclarativeBase):
@@ -27,8 +32,26 @@ cliente = Cliente(
     cep="20040002"
 )
 
-session = SessionLocal()
-session.add(cliente)
-session.commit()
-print(cliente.id)
-session.close()
+def buscar_cliente_por_cpf(cpf):
+
+    session = SessionLocal()
+
+    try:
+        stmt = select(Cliente).where(Cliente.cpf == cpf)
+        resultado = session.execute(stmt)
+        cliente = resultado.scalar_one_or_none()
+
+        return cliente
+        
+    finally:
+        session.close()
+
+cliente = buscar_cliente_por_cpf("12345678901")
+
+if cliente:
+    print(cliente.nome)
+else:
+    print("Cliente não encontrado")
+
+
+

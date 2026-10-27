@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from app.database.connection import buscar_cliente_por_cpf
 import httpx
 
 app = FastAPI()
@@ -29,6 +30,18 @@ def buscar(cep: str):
             raise HTTPException(status_code=503, detail="Falha na conexão")
         elif erro.tipo == "resposta_http":
             raise HTTPException(status_code=502, detail="Resposta inválida do servidor")
+
+@app.get("/clientes/{cpf}")
+def buscar_cliente(cpf: str):
+    if len(cpf) != 11 or not cpf.isdigit():
+        raise HTTPException(status_code=400, detail="CPF inválido")
+
+    cliente = buscar_cliente_por_cpf(cpf)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    return {"id": cliente.id, "nome": cliente.nome}
+
 
     
 class CEPNaoEncontrado(Exception):
