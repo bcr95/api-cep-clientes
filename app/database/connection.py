@@ -46,12 +46,25 @@ def buscar_cliente_por_cpf(cpf):
     finally:
         session.close()
 
-cliente = buscar_cliente_por_cpf("12345678901")
+# cliente = buscar_cliente_por_cpf("12345678901")
 
-if cliente:
-    print(cliente.nome)
-else:
-    print("Cliente não encontrado")
+# if cliente:
+#     print(cliente.nome)
+# else:
+#     print("Cliente não encontrado")
 
+def listar_clientes():
+
+    session = SessionLocal()
+
+    try:
+        stmt = select(Cliente)
+        resultado = session.execute(stmt)
+        cliente = resultado.scalars().all()
+
+        return cliente
+            
+    finally:
+        session.close()
 
 

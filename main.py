@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from app.database.connection import buscar_cliente_por_cpf
+from app.database.connection import buscar_cliente_por_cpf, listar_clientes
 import httpx
 
 app = FastAPI()
@@ -42,7 +42,18 @@ def buscar_cliente(cpf: str):
 
     return {"id": cliente.id, "nome": cliente.nome}
 
+@app.get("/clientes")
+def listar():
+    clientes = listar_clientes()
+    lista_clientes = []
 
+    for cliente in clientes:
+        lista_clientes.append({
+            "id": cliente.id, 
+            "nome": cliente.nome
+        })
+
+    return lista_clientes
     
 class CEPNaoEncontrado(Exception):
     pass
